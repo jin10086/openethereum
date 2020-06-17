@@ -1655,9 +1655,12 @@ name = "ethkey"
 version = "0.4.0"
 dependencies = [
  "edit-distance",
+ "ethereum-types",
+ "keccak-hash",
  "log",
  "parity-crypto",
  "parity-wordlist",
+ "rlp",
  "serde",
  "serde_derive",
 ]

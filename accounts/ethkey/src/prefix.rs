@@ -14,7 +14,10 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Ethereum.  If not, see <http://www.gnu.org/licenses/>.
 
-use parity_crypto::publickey::{Random, Generator, KeyPair, Error};
+use ethereum_types::{Address, H256, U256};
+use keccak_hash::keccak;
+use parity_crypto::publickey::{Error, Generator, KeyPair, Random};
+use rlp::RlpStream;
 
 /// Tries to find keypair with address starting with given prefix.
 pub struct Prefix {
@@ -30,12 +33,24 @@ impl Prefix {
 	pub fn generate(&mut self) -> Result<KeyPair, Error> {
 		for _ in 0..self.iterations {
 			let keypair = Random.generate();
-			if keypair.address().as_ref().starts_with(&self.prefix) {
-				return Ok(keypair)
+			let nonce = U256::zero();
+			let sender = keypair.address();
+			let mut stream = RlpStream::new_list(2);
+			stream.append(&sender);
+			stream.append(&nonce);
+			let contract_address = From::from(keccak(stream.as_raw()));
+			if contract_address.as_bytes().starts_with(&self.prefix) {
+				return Ok(keypair);
 			}
 		}
 
 		Err(Error::Custom("Could not find keypair".into()))
+	}
+	pub fn mk_contract_address(sender: Address, nonce: U256) -> Address {
+		let mut stream = RlpStream::new_list(2);
+		stream.append(&sender);
+		stream.append(&nonce);
+		From::from(keccak(stream.as_raw()))
 	}
 }
 
@@ -46,7 +61,9 @@ mod tests {
 	#[test]
 	fn prefix_generator() {
 		let prefix = vec![0xffu8];
-		let keypair = Prefix::new(prefix.clone(), usize::max_value()).generate().unwrap();
+		let keypair = Prefix::new(prefix.clone(), usize::max_value())
+			.generate()
+			.unwrap();
 		assert!(keypair.address().as_bytes().starts_with(&prefix));
 	}
 }
