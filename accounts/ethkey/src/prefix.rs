@@ -38,7 +38,7 @@ impl Prefix {
 			let mut stream = RlpStream::new_list(2);
 			stream.append(&sender);
 			stream.append(&nonce);
-			let contract_address = From::from(keccak(stream.as_raw()));
+			let contract_address: Address = From::from(keccak(stream.as_raw()));
 			if contract_address.as_bytes().starts_with(&self.prefix) {
 				return Ok(keypair);
 			}

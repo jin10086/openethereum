@@ -20,6 +20,9 @@ extern crate edit_distance;
 extern crate parity_crypto;
 extern crate parity_wordlist;
 extern crate serde;
+extern crate ethereum_types;
+extern crate keccak_hash;
+extern crate rlp;
 
 #[macro_use]
 extern crate log;
